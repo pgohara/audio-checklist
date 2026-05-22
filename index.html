@@ -1,0 +1,434 @@
+<div id="wpb-audio-app">
+<style>
+#wpb-audio-app { display:block; border-radius:12px; overflow:hidden; max-width:600px; margin:0 auto; }
+
+  #wpb-audio-app {--c-bg: #0f1117; --c-surface: #1a1d27; --c-surface2: #22263a; --c-border: #2e3348; --c-text: #e8eaf6; --c-text2: #8b90a8; --c-text3: #555a72; --c-a1: #4a9eff; --c-a1bg: #0d2640; --c-h1: #4caf7d; --c-h1bg: #0d2a1a; --c-h2: #f5a623; --c-h2bg: #2a1a05; --c-band: #b07fff; --c-bandbg: #1a0d40; --c-green: #1db97a; --c-red: #e05252; --c-phase0: #4a9eff; --c-phase1: #4caf7d; --c-phase2: #f5a623; --c-phase3: #b07fff; --c-td: #e05252; --radius: 10px; --radius-sm: 6px; --safe-bottom: env(safe-area-inset-bottom, 0px);}
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  #wpb-audio-app { height:auto; background: var(--c-bg); color: var(--c-text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+  /* ── Header ── */
+  .app-header {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--c-surface);
+    border-bottom: 1px solid var(--c-border);
+    padding: 12px 16px 0;
+  }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .app-title { font-size: 16px; font-weight: 700; letter-spacing: .02em; }
+  .app-title span { color: var(--c-a1); }
+  .reset-btn {
+    font-size: 12px; color: var(--c-text2); background: var(--c-surface2);
+    border: 1px solid var(--c-border); border-radius: 20px; padding: 4px 12px; cursor: pointer;
+  }
+  .reset-btn:active { opacity: .7; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 4px; }
+  .tab {
+    flex: 1; text-align: center; padding: 8px 4px; font-size: 13px; font-weight: 600;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    cursor: pointer; color: var(--c-text2); border: 1px solid transparent; border-bottom: none;
+    transition: all .15s;
+  }
+  .tab.active { background: var(--c-bg); color: var(--c-text); border-color: var(--c-border); }
+
+  /* ── Progress bar ── */
+  .global-prog { height: 3px; background: var(--c-surface2); }
+  .global-prog-fill { height: 100%; background: var(--c-green); transition: width .3s; }
+
+  /* ── Summary strip ── */
+  .summary {
+    display: flex; gap: 8px; padding: 10px 16px;
+    background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+  }
+  .sum-pill {
+    flex: 1; background: var(--c-surface2); border-radius: var(--radius-sm);
+    padding: 6px 8px; text-align: center;
+  }
+  .sum-val { font-size: 18px; font-weight: 700; }
+  .sum-lbl { font-size: 10px; color: var(--c-text2); margin-top: 1px; }
+
+  /* ── Scroll area ── */
+  .scroll-area { overflow-y: auto; padding: 12px 12px calc(16px + var(--safe-bottom)); }
+
+  /* ── Phase card ── */
+  .phase-card { background: var(--c-surface); border-radius: var(--radius); border: 1px solid var(--c-border); margin-bottom: 10px; overflow: hidden; }
+  .phase-head {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    cursor: pointer; user-select: none;
+  }
+  .phase-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .phase-title-block { flex: 1; min-width: 0; }
+  .phase-name { font-size: 13px; font-weight: 700; }
+  .phase-time { font-size: 11px; color: var(--c-text2); margin-top: 1px; }
+  .phase-prog-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .phase-count { font-size: 11px; color: var(--c-text2); min-width: 32px; text-align: right; }
+  .phase-chevron { font-size: 14px; color: var(--c-text3); transition: transform .2s; }
+  .phase-chevron.open { transform: rotate(180deg); }
+  .phase-prog-bar { width: 40px; height: 4px; background: var(--c-surface2); border-radius: 2px; }
+  .phase-prog-fill { height: 100%; border-radius: 2px; transition: width .3s; }
+
+  /* ── Section divider ── */
+  .sec-div {
+    font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--c-text3); padding: 8px 14px 4px;
+    border-top: 1px solid var(--c-border);
+  }
+  .sec-div:first-child { border-top: 1px solid var(--c-border); }
+
+  /* ── Task row ── */
+  .task-list { border-top: 1px solid var(--c-border); }
+  .task-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 14px; border-bottom: 1px solid var(--c-border);
+    cursor: pointer; transition: background .1s;
+  }
+  .task-row:last-child { border-bottom: none; }
+  .task-row:active { background: var(--c-surface2); }
+  .task-row.done { opacity: .5; }
+  .task-check {
+    width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--c-border);
+    flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center;
+    transition: all .15s; background: transparent;
+  }
+  .task-row.done .task-check { background: var(--c-green); border-color: var(--c-green); }
+  .checkmark { display: none; color: #fff; font-size: 13px; font-weight: 700; line-height: 1; }
+  .task-row.done .checkmark { display: block; }
+  .task-body { flex: 1; min-width: 0; }
+  .task-who { font-size: 10px; font-weight: 700; margin-bottom: 3px; }
+  .task-name { font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--c-text); }
+  .task-row.done .task-name { text-decoration: line-through; color: var(--c-text3); }
+  .task-detail { font-size: 11px; color: var(--c-text2); margin-top: 3px; line-height: 1.45; }
+  .task-time { font-size: 10px; color: var(--c-text3); flex-shrink: 0; margin-top: 2px; }
+
+  /* ── Who colors ── */
+  .who-A1 { color: var(--c-a1); }
+  .who-H { color: var(--c-h1); }
+  .who-BAND { color: var(--c-band); }
+  .who-MIX { color: var(--c-h2); }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    display: flex; gap: 6px; padding: 8px 12px;
+    background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .f-btn {
+    white-space: nowrap; font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px; border: 1px solid var(--c-border);
+    cursor: pointer; background: transparent; color: var(--c-text2); transition: all .15s;
+    flex-shrink: 0;
+  }
+  .f-btn.active-all { background: var(--c-surface2); color: var(--c-text); border-color: var(--c-text3); }
+  .f-btn.active-a1 { background: var(--c-a1bg); color: var(--c-a1); border-color: var(--c-a1); }
+  .f-btn.active-h { background: var(--c-h1bg); color: var(--c-h1); border-color: var(--c-h1); }
+  .f-btn.active-band { background: var(--c-bandbg); color: var(--c-band); border-color: var(--c-band); }
+  .task-row.hidden { display: none; }
+
+  /* ── Phase color accents ── */
+  .p0 { background: var(--c-phase0); }
+  .p1 { background: var(--c-phase1); }
+  .p2 { background: var(--c-phase2); }
+  .p3 { background: var(--c-phase3); }
+  .ptd { background: var(--c-td); }
+
+</style>
+<div class="app-header">
+  <div class="header-top">
+    <div class="app-title"><span>WPB</span> Audio Checklist</div>
+    <button class="reset-btn" onclick="confirmReset()">Reset</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" id="tab-setup" onclick="switchTab('setup')">&#9654; Setup (4 hrs)</div>
+    <div class="tab" id="tab-teardown" onclick="switchTab('teardown')">&#9660; Teardown</div>
+  </div>
+</div>
+
+<div class="global-prog"><div class="global-prog-fill" id="global-fill" style="width:0%"></div></div>
+
+<div class="summary">
+  <div class="sum-pill"><div class="sum-val" id="sum-done">0</div><div class="sum-lbl">Done</div></div>
+  <div class="sum-pill"><div class="sum-val" id="sum-remain">0</div><div class="sum-lbl">Remaining</div></div>
+  <div class="sum-pill"><div class="sum-val" id="sum-pct">0%</div><div class="sum-lbl">Complete</div></div>
+</div>
+
+<div class="filter-bar">
+  <button class="f-btn active-all" id="fb-all" onclick="setFilter('all')">All</button>
+  <button class="f-btn" id="fb-a1" onclick="setFilter('a1')">A1 (you)</button>
+  <button class="f-btn" id="fb-h" onclick="setFilter('h')">H1 / H2</button>
+  <button class="f-btn" id="fb-band" onclick="setFilter('band')">Band</button>
+</div>
+
+<div class="scroll-area" id="main-content"></div>
+
+<script>
+const DATA = {
+  setup: [
+    {
+      id: 'p0', label: 'Phase 0 — Pre-deployment', time: 'T+0:00 – T+0:30', color: 'p0',
+      tasks: [
+        {id:'p0t0', who:'H1 + H2', whoClass:'who-H', name:'Unload van — stage all cases by type', detail:'Off vehicle before opening anything. Cluster: racks, cable boxes, PA cases, stand bag.', time:'15 min', filter:'h'},
+        {id:'p0t1', who:'A1', whoClass:'who-A1', name:'Confirm venue power and FOH power plan', detail:'Identify stage power drops, circuit amperage. Decide battery genny vs. venue power at FOH.', time:'10 min', filter:'a1'},
+        {id:'p0t2', who:'A1', whoClass:'who-A1', name:'Spike all mic stand positions with gaff tape', detail:'Mark every stand position from stage plot before stands go up. Do this first — fixes prior-year placement inconsistency.', time:'10 min', filter:'a1'},
+        {id:'p0t3', who:'A1', whoClass:'who-A1', name:'Brief helpers on task assignments', detail:'H1: stands to spike marks, no mics/cables. H2: male XLR ends to cat boxes in channel order, coil female tail toward stand, stop there.', time:'5 min', filter:'a1'},
+      ]
+    },
+    {
+      id: 'p1', label: 'Phase 1 — Cabling & Connections', time: 'T+0:30 – T+2:00', color: 'p1',
+      sections: [
+        { label: 'Power & PA — parallel block', tasks: [
+          {id:'p1t0', who:'H1 + H2', whoClass:'who-H', name:'Run and connect stage power distribution', detail:'TrueCon panel for stage rack, amp rack, monitor stringer breakout. Dress cables before energizing. No power yet.', time:'20 min', filter:'h'},
+          {id:'p1t1', who:'H1 + H2', whoClass:'who-H', name:'Deploy SYVA L/R — position and assemble columns', detail:'Uncase lows and tops. Tops onto columns. Position at L/R marks. NL4 to amp rack. No power yet.', time:'20 min', filter:'h'},
+          {id:'p1t2', who:'A1', whoClass:'who-A1', name:'Position all racks — stage, amp, FOH', detail:'Stage rack SL/SR per venue. Amp rack adjacent to PA. FOH rack to FOH position.', time:'15 min', filter:'a1'},
+          {id:'p1t3', who:'A1', whoClass:'who-A1', name:'NL4 speaker cables — amp rack CH1+CH3 to SYVA lows', detail:'CH1 → L low, CH3 → R low. Verify NL4 pin orientation. Confirm jumper cables between lows and tops.', time:'10 min', filter:'a1'},
+        ]},
+        { label: 'Network', tasks: [
+          {id:'p1t4', who:'A1', whoClass:'who-A1', name:'Pull FOH Cat reel — stage rack to FOH (~75ft)', detail:'Primary Dante trunk. Protect from foot traffic. Tape floor crossings.', time:'15 min', filter:'a1'},
+        ]},
+        { label: 'Mics & Stands — all 3 working simultaneously', tasks: [
+          {id:'p1t5', who:'H1', whoClass:'who-H', name:'Place mic stands at spiked positions', detail:'Stands to gaff marks only. Quick-release adapters on all stands. Rough boom angle per plot. No mics or cables.', time:'25 min', filter:'h'},
+          {id:'p1t6', who:'H2', whoClass:'who-H', name:'Pre-stage cat box XLR drops — male ends only', detail:'XLR male to assigned cat box in channel order. Coil female tail toward stand. Stop there — do NOT connect to mic.', time:'20 min', filter:'h'},
+          {id:'p1t7', who:'A1', whoClass:'who-A1', name:'Deploy SoundTools Cat runs — catrack to stage positions', detail:'Match paired cable labels to cat box labels. Dress runs along stage edge or under risers.', time:'25 min', filter:'a1'},
+          {id:'p1t8', who:'A1', whoClass:'who-A1', name:'Final stand positioning and mic mount', detail:'Adjust boom for instrument, mount mic in clip, connect female XLR with clean strain relief, coil excess at box.', time:'30 min', filter:'a1'},
+        ]},
+        { label: 'Wireless', tasks: [
+          {id:'p1t9', who:'A1', whoClass:'who-A1', name:'Antenna stand and RG8X runs for ANX4', detail:'RF Venue Diversity Fin on stand, FOH-facing. RG8X to stage rack ANX4. Clear of metal structures.', time:'10 min', filter:'a1'},
+        ]},
+        { label: 'Monitors', tasks: [
+          {id:'p1t10', who:'H1 + H2', whoClass:'who-H', name:'Position monitors — vocal wedge and battery hotspot', detail:'Vocal wedge downstage center-right. Battery hotspot at conductor podium. Run monitor feed from stage rack to wedge.', time:'10 min', filter:'h'},
+        ]},
+        { label: 'FOH', tasks: [
+          {id:'p1t11', who:'A1', whoClass:'who-A1', name:'FOH setup — console, laptops, router, network', detail:'DM7C positioned and powered. Router flipped up. Laptops placed. CRITICAL: each machine on correct VLAN before power-up. Dante = VLAN 1, Control = VLAN 2.', time:'20 min', filter:'a1'},
+        ]},
+      ]
+    },
+    {
+      id: 'p2', label: 'Phase 2 — Verify & Troubleshoot', time: 'T+2:00 – T+2:45', color: 'p2',
+      tasks: [
+        {id:'p2t0', who:'A1', whoClass:'who-A1', name:'Power up: stage rack → amp rack → FOH console', detail:'Stage rack first — Rio, RMP8s, ANX4 online before console boots. Amp rack after Dante stable. Never reverse.', time:'5 min', filter:'a1'},
+        {id:'p2t1', who:'A1', whoClass:'who-A1', name:'Dante Controller — all devices on VLAN 1', detail:'Rio 1608, both RMP8s, ANX4, DM7C must appear. One clock master. Resolve any conflicts before routing check.', time:'10 min', filter:'a1'},
+        {id:'p2t2', who:'A1', whoClass:'who-A1', name:'Verify Dante routing preset', detail:'Confirm routing loaded. Spot check: input 1 → CH1, console out 1 → monitor mix 1. Verify at least 4–5 channels.', time:'10 min', filter:'a1'},
+        {id:'p2t3', who:'A1', whoClass:'who-A1', name:'LA Network Manager — P1 online, SYVA preset loaded', detail:'VLAN 2. P1 shows SYVA preset with venue delay/EQ. LA4X CH1+CH3 active, CH2+CH4 muted.', time:'10 min', filter:'a1'},
+        {id:'p2t4', who:'A1', whoClass:'who-A1', name:'Wireless Workbench — RF scan, assign frequencies, battery check', detail:'Scan RF environment first. Assign all 5 ANX4 channels to clean spectrum. Check all transmitter batteries.', time:'10 min', filter:'a1'},
+        {id:'p2t5', who:'A1', whoClass:'who-A1', name:'Input gain check — all 28 channels, phantom confirmed', detail:'Walk stage with talkback or source. Phantom on all condensers. Every channel shows signal at console.', time:'15 min', filter:'a1'},
+        {id:'p2t6', who:'H1 + H2', whoClass:'who-H', name:'Final cable dress — tape crossings, tuck runs, velcro coils', detail:'Full stage pass. Any cable crossing foot traffic gets taped. Neatness protects troubleshooting speed.', time:'20 min', filter:'h'},
+        {id:'p2t7', who:'A1', whoClass:'who-A1', name:'Troubleshoot open issues — buffer time', detail:'Dante missing: check subnet/VLAN. No signal: check phantom, XLR seating, cat box. RF issue: rescan.', time:'15 min', filter:'a1'},
+      ]
+    },
+    {
+      id: 'p3', label: 'Phase 3 — PA Tune & Vocal Check', time: 'T+2:45 – T+4:00', color: 'p3',
+      tasks: [
+        {id:'p3t0', who:'A1', whoClass:'who-A1', name:'Pink noise — verify L/R coverage and balance', detail:'Walk the coverage zone. Check vertical coverage to front rows. Listen for L/R imbalance.', time:'10 min', filter:'a1'},
+        {id:'p3t1', who:'A1', whoClass:'who-A1', name:'P1 — apply venue-specific delay, EQ, alignment', detail:'Presets are a starting point. Every venue changes the answer. Trust measurement over assumption.', time:'20 min', filter:'a1'},
+        {id:'p3t2', who:'A1', whoClass:'who-A1', name:'GEQ/PEQ — room modes and feedback margin', detail:'Target 125–500Hz in outdoor/reflective environments. Push gain before feedback per vocal mic.', time:'15 min', filter:'a1'},
+        {id:'p3t3', who:'A1', whoClass:'who-A1', name:'Vocal mic check — gain structure, EQ, feedback rejection', detail:'Each wireless channel independently. Set gain, apply EQ, confirm gates. All 5 channels before moving on.', time:'15 min', filter:'a1'},
+        {id:'p3t4', who:'A1', whoClass:'who-A1', name:'Monitor mixes — initial levels, wedge and hotspot', detail:'Set from tablet walking stage. Vocals in mix 1, rhythm in mix 2. Refined during soundcheck.', time:'15 min', filter:'a1'},
+        {id:'p3t5', who:'A1', whoClass:'who-A1', name:'Playback check — routing confirmed to main mix', detail:'Fire test audio through playback L/R. Confirm main bus routing. Level-match to program.', time:'5 min', filter:'a1'},
+        {id:'p3t6', who:'A1', whoClass:'who-A1', name:'Nuendo Live — arm tracks, check levels, test record', detail:'Arm all channels. Target -18dBFS nominal. 30-sec test record, confirm files writing, check drive space.', time:'10 min', filter:'a1'},
+        {id:'p3t7', who:'A1', whoClass:'who-A1', name:'Final systems check — all green before soundcheck', detail:'Visual pass: mics placed, cables dressed, amp rack locked, wireless ready, console in correct scene.', time:'5 min', filter:'a1'},
+      ]
+    },
+  ],
+  teardown: [
+    {
+      id: 'td1', label: 'Teardown 1 — Power Down & PA Strike', time: 'Immediately post-show', color: 'ptd',
+      tasks: [
+        {id:'td1t0', who:'A1', whoClass:'who-A1', name:'Power down: mute console → FOH → amp rack → stage rack', detail:'Mute all console outputs first. FOH off. Amp rack before stage rack — prevents thump. Power distribution last.', time:'5 min', filter:'a1'},
+        {id:'td1t1', who:'H1 + H2', whoClass:'who-H', name:'Strike SYVA L/R — tops off columns, case both sides', detail:'Tops first, then lows. Two-person lift on lows. Into soft cases. No dragging on concrete.', time:'15 min', filter:'h'},
+        {id:'td1t2', who:'2 band', whoClass:'who-BAND', name:'Coil and case NL4 speaker cables', detail:'Figure-eight coil. Velcro tie. Amp rack case or dedicated pocket.', time:'5 min', filter:'band'},
+        {id:'td1t3', who:'A1', whoClass:'who-A1', name:'Disconnect and coil FOH Cat reel', detail:'Console end first, then stage end. Coil neatly onto reel. Terminations are fragile.', time:'10 min', filter:'a1'},
+      ]
+    },
+    {
+      id: 'td2', label: 'Teardown 2 — Mics, Stands & Cable Strike', time: 'Parallel with Teardown 1', color: 'ptd',
+      tasks: [
+        {id:'td2t0', who:'4 band', whoClass:'who-BAND', name:'Strike mics — remove from clips, return in input order', detail:'Mic off stand, out of clip, clip stays on stand. Mics back in box in channel order 1–28.', time:'15 min', filter:'band'},
+        {id:'td2t1', who:'4 band', whoClass:'who-BAND', name:'Disconnect and coil XLR drops from cat boxes', detail:'Disconnect at cat box end. Neat coil. Velcro tie if trained.', time:'10 min', filter:'band'},
+        {id:'td2t2', who:'H1 + H2', whoClass:'who-H', name:'Strike mic stands — collapse, remove clips, bag', detail:'Remove quick-release adapters, return to mic box. Collapse stands. Bag or road case.', time:'15 min', filter:'h'},
+        {id:'td2t3', who:'2 band', whoClass:'who-BAND', name:'Collect and case SoundTools Cat runs', detail:'Pull from cat boxes back to catrack. Coil by length. Return to cable box in labeled pairs.', time:'15 min', filter:'band'},
+        {id:'td2t4', who:'2 band', whoClass:'who-BAND', name:'Strike cat boxes and case', detail:'Each box back in case. XLR tails tucked before closing.', time:'5 min', filter:'band'},
+      ]
+    },
+    {
+      id: 'td3', label: 'Teardown 3 — Racks & FOH', time: 'After Teardown 2 complete', color: 'ptd',
+      tasks: [
+        {id:'td3t0', who:'A1', whoClass:'who-A1', name:'FOH teardown — laptops, console, router packed', detail:'Laptops and mini-PC cased first. Console lid closed and latched. Router folded. Power cables coiled.', time:'15 min', filter:'a1'},
+        {id:'td3t1', who:'H1 + H2', whoClass:'who-H', name:'Strike power distribution — stringer boxes, TrueCon panel, power box', detail:'Unplug all TrueCon connections. Coil stringer runs. Pack power box.', time:'10 min', filter:'h'},
+        {id:'td3t2', who:'2 band', whoClass:'who-BAND', name:'Strike antenna stand and coil RG8X runs', detail:'Careful coil — tight bends damage coax. Return to stage rack case.', time:'5 min', filter:'band'},
+        {id:'td3t3', who:'A1', whoClass:'who-A1', name:'Stage rack — disconnect all, roll to loading area', detail:'All Cat runs, power, and monitor cables disconnected before moving.', time:'10 min', filter:'a1'},
+        {id:'td3t4', who:'H1 + H2', whoClass:'who-H', name:'Amp rack to loading area', detail:'Two-person move. Do not tip. NL4s confirmed disconnected.', time:'5 min', filter:'h'},
+        {id:'td3t5', who:'A1', whoClass:'who-A1', name:'FOH rack to loading area', detail:'All connections confirmed disconnected.', time:'5 min', filter:'a1'},
+      ]
+    },
+    {
+      id: 'td4', label: 'Teardown 4 — Load Out & Sweep', time: 'Final', color: 'ptd',
+      tasks: [
+        {id:'td4t0', who:'All', whoClass:'who-BAND', name:'Load van/truck — heavy cases first', detail:'Racks and SYVA lows first. Smaller cases and mic box on top. Stand bag last.', time:'15 min', filter:'band'},
+        {id:'td4t1', who:'2 band', whoClass:'who-BAND', name:'Stage and FOH sweep — gaff pulls, forgotten cables', detail:'Full visual pass of stage, under risers, FOH position. Pull all gaff spike marks. Check under conductor podium.', time:'10 min', filter:'band'},
+        {id:'td4t2', who:'A1', whoClass:'who-A1', name:'Final gear count against pack-out list', detail:'Verify: Power Box, Cable Box, Cat Box, Mic Box, Stand Bag, Stage Rack, FOH Rack, Amp Rack, SYVA Lows x2, SYVA Tops x2, FOH Cat Reel, Console Case, FOH A1 Box, Battery Genny.', time:'5 min', filter:'a1'},
+      ]
+    },
+  ]
+};
+
+let currentTab = 'setup';
+let currentFilter = 'all';
+let checked = {};
+
+function storageKey() { return 'wpb_audio_' + currentTab; }
+
+function loadChecked() {
+  try {
+    const raw = localStorage.getItem(storageKey());
+    checked = raw ? JSON.parse(raw) : {};
+  } catch(e) { checked = {}; }
+}
+
+function saveChecked() {
+  try { localStorage.setItem(storageKey(), JSON.stringify(checked)); } catch(e) {}
+}
+
+function toggleTask(id) {
+  checked[id] = !checked[id];
+  saveChecked();
+  const row = document.getElementById('row-' + id);
+  if (row) row.classList.toggle('done', !!checked[id]);
+  const chk = document.getElementById('chk-' + id);
+  if (chk) chk.classList.toggle('done', !!checked[id]);
+  updateSummary();
+}
+
+function getAllTasks() {
+  const phases = DATA[currentTab];
+  let all = [];
+  phases.forEach(ph => {
+    if (ph.sections) ph.sections.forEach(s => s.tasks.forEach(t => all.push(t)));
+    else if (ph.tasks) ph.tasks.forEach(t => all.push(t));
+  });
+  return all;
+}
+
+function updateSummary() {
+  const tasks = getAllTasks();
+  const total = tasks.length;
+  const done = tasks.filter(t => checked[t.id]).length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('sum-done').textContent = done;
+  document.getElementById('sum-remain').textContent = total - done;
+  document.getElementById('sum-pct').textContent = pct + '%';
+  document.getElementById('global-fill').style.width = pct + '%';
+
+  // Per-phase progress
+  DATA[currentTab].forEach(ph => {
+    let ptasks = [];
+    if (ph.sections) ph.sections.forEach(s => s.tasks.forEach(t => ptasks.push(t)));
+    else if (ph.tasks) ph.tasks.forEach(t => ptasks.push(t));
+    const pdone = ptasks.filter(t => checked[t.id]).length;
+    const pfill = document.getElementById('pfill-' + ph.id);
+    const pcnt = document.getElementById('pcnt-' + ph.id);
+    if (pfill) pfill.style.width = ptasks.length ? Math.round(pdone / ptasks.length * 100) + '%' : '0%';
+    if (pcnt) pcnt.textContent = pdone + '/' + ptasks.length;
+  });
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  ['all','a1','h','band'].forEach(x => {
+    const btn = document.getElementById('fb-' + x);
+    btn.className = 'f-btn' + (x === f ? ' active-' + (x === 'all' ? 'all' : x === 'a1' ? 'a1' : x === 'h' ? 'h' : 'band') : '');
+  });
+  document.querySelectorAll('.task-row').forEach(row => {
+    if (f === 'all') { row.classList.remove('hidden'); return; }
+    const tf = row.dataset.filter || '';
+    row.classList.toggle('hidden', tf !== f);
+  });
+}
+
+function togglePhase(id) {
+  const body = document.getElementById('pbody-' + id);
+  const chev = document.getElementById('pchev-' + id);
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  chev.classList.toggle('open', !open);
+}
+
+function renderPhases() {
+  const container = document.getElementById('main-content');
+  const phases = DATA[currentTab];
+  let html = '';
+
+  phases.forEach(ph => {
+    let tasksHTML = '';
+    if (ph.sections) {
+      ph.sections.forEach(sec => {
+        tasksHTML += `<div class="sec-div">${sec.label}</div>`;
+        sec.tasks.forEach(t => { tasksHTML += taskHTML(t); });
+      });
+    } else {
+      ph.tasks.forEach(t => { tasksHTML += taskHTML(t); });
+    }
+
+    html += `
+    <div class="phase-card">
+      <div class="phase-head" onclick="togglePhase('${ph.id}')">
+        <div class="phase-dot ${ph.color}"></div>
+        <div class="phase-title-block">
+          <div class="phase-name">${ph.label}</div>
+          <div class="phase-time">${ph.time}</div>
+        </div>
+        <div class="phase-prog-wrap">
+          <span class="phase-count" id="pcnt-${ph.id}">0/0</span>
+          <div class="phase-prog-bar"><div class="phase-prog-fill ${ph.color}" id="pfill-${ph.id}" style="width:0%"></div></div>
+          <span class="phase-chevron open" id="pchev-${ph.id}">&#9660;</span>
+        </div>
+      </div>
+      <div id="pbody-${ph.id}">
+        <div class="task-list">${tasksHTML}</div>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function taskHTML(t) {
+  const done = !!checked[t.id];
+  return `<div class="task-row${done?' done':''}" id="row-${t.id}" data-filter="${t.filter}" onclick="toggleTask('${t.id}')">
+    <div class="task-check${done?' done':''}" id="chk-${t.id}"><span class="checkmark">&#10003;</span></div>
+    <div class="task-body">
+      <div class="task-who ${t.whoClass}">${t.who}</div>
+      <div class="task-name">${t.name}</div>
+      <div class="task-detail">${t.detail}</div>
+    </div>
+    <div class="task-time">${t.time}</div>
+  </div>`;
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-setup').classList.toggle('active', tab === 'setup');
+  document.getElementById('tab-teardown').classList.toggle('active', tab === 'teardown');
+  loadChecked();
+  renderPhases();
+  updateSummary();
+  setFilter(currentFilter);
+  window.scrollTo(0, 0);
+}
+
+function confirmReset() {
+  if (confirm('Reset all checkboxes for ' + (currentTab === 'setup' ? 'Setup' : 'Teardown') + '?')) {
+    checked = {};
+    saveChecked();
+    renderPhases();
+    updateSummary();
+    setFilter(currentFilter);
+  }
+}
+
+// Init
+loadChecked();
+renderPhases();
+updateSummary();
+</script>
+</div>
